@@ -22,13 +22,14 @@
             font-family: "Segoe UI", Arial, sans-serif;
             background: var(--bg);
             color: var(--text);
+            -webkit-tap-highlight-color: transparent;
         }
         .wrap {
-            width: min(960px, calc(100% - 28px));
-            margin: 28px auto;
+            width: min(960px, calc(100% - 24px));
+            margin: 20px auto;
         }
         h1 {
-            margin: 0 0 8px;
+            margin: 0 0 6px;
             text-align: center;
             font-size: 30px;
             font-weight: 700;
@@ -37,8 +38,8 @@
         .subtitle {
             text-align: center;
             color: var(--muted);
-            margin-bottom: 22px;
-            font-size: 16px;
+            margin-bottom: 20px;
+            font-size: 15px;
         }
         .search-block {
             display: flex;
@@ -52,29 +53,35 @@
             background: var(--panel);
             border-radius: 8px;
             padding: 14px 16px;
-            font-size: 17px;
+            font-size: 16px;
             outline: none;
             box-shadow: var(--shadow);
             transition: border-color 0.2s;
         }
         .search:focus { border-color: var(--blue); }
+        
+        /* Оптимизированная панель букв */
         .kaz-panel {
-            display: flex;
-            gap: 8px;
-            margin: 2px 2px 8px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+            gap: 6px;
+            margin: 2px 0;
         }
         .symbol-btn {
             border: 1px solid var(--border);
             background: var(--panel);
             color: var(--text);
             border-radius: 8px;
-            padding: 8px 14px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
             user-select: none;
             transition: all 0.15s;
+            padding: 0;
         }
         .symbol-btn:hover {
             border-color: var(--blue);
@@ -82,7 +89,7 @@
             background: #f0f9ff;
         }
         .counter {
-            margin: 14px 2px;
+            margin: 12px 2px;
             color: var(--muted);
             font-size: 14px;
             font-weight: 600;
@@ -100,7 +107,7 @@
             margin-bottom: 10px;
             border-radius: 6px;
             padding: 4px 10px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             background: #ecfeff;
             color: #0e7490;
@@ -109,7 +116,7 @@
         }
         .question {
             font-size: 16px;
-            line-height: 1.5;
+            line-height: 1.45;
             font-weight: 650;
             margin-bottom: 12px;
         }
@@ -126,7 +133,45 @@
             text-align: center;
             color: var(--muted);
             padding: 40px 0;
-            font-size: 16px;
+            font-size: 15px;
+        }
+
+        /* Адаптивные стили для мобильных устройств */
+        @media (max-width: 480px) {
+            .wrap {
+                margin: 16px auto;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .subtitle {
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+            .search {
+                padding: 12px 14px;
+                font-size: 15px;
+            }
+            .kaz-panel {
+                grid-template-columns: repeat(9, 1fr); /* Выстраиваем строго в один компактный ряд */
+                gap: 4px;
+            }
+            .symbol-btn {
+                height: 36px;
+                font-size: 14px;
+                border-radius: 6px;
+            }
+            .card {
+                padding: 14px;
+            }
+            .question {
+                font-size: 15px;
+                margin-bottom: 10px;
+            }
+            .answer {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -205,7 +250,7 @@
                 "correct": "Заттың бөлшектік санын білдіреді"
         },
         {
-                "question": "Қандай сан есім өзге сан есімдердің жасалуына негіз болады?",
+                "question": "Қандай сан есім өзге сан есімдердин жасалуына негіз болады?",
                 "correct": "Есептік сан есім"
         },
         {
@@ -613,7 +658,7 @@
                 "correct": "М.Әуезов"
         },
         {
-                "question": "«Астана Опера» мемлекеттік опера және балет театры қай жылы ашылды?",
+                "question": "«Астана Opera» мемлекеттік опера және балет театры қай жылы ашылды?",
                 "correct": "2013"
         }
         ];
@@ -641,7 +686,7 @@
                 .replace(/ү/g, 'у')
                 .replace(/ұ/g, 'у')
                 .replace(/қ/g, 'к')
-                .replace(/ө/g, 'о');
+                .replace(/ө/g, 'о'));
         }
 
         function render() {
