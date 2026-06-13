@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Казахский язык — Поисковик ответов</title>
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --panel: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #d9dee8;
+            --blue: #0e7490;
+            --green-bg: #ecfdf5;
+            --green: #047857;
+            --shadow: 0 8px 22px rgba(31, 41, 55, 0.08);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .wrap {
+            width: min(960px, calc(100% - 28px));
+            margin: 28px auto;
+        }
+        h1 {
+            margin: 0 0 8px;
+            text-align: center;
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--blue);
+        }
+        .subtitle {
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: 22px;
+            font-size: 16px;
+        }
+        .search-block {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .search {
+            width: 100%;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 17px;
+            outline: none;
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s;
+        }
+        .search:focus { border-color: var(--blue); }
+        .kaz-panel {
+            display: flex;
+            gap: 8px;
+            margin: 2px 2px 8px;
+            flex-wrap: wrap;
+        }
+        .symbol-btn {
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            user-select: none;
+            transition: all 0.15s;
+        }
+        .symbol-btn:hover {
+            border-color: var(--blue);
+            color: var(--blue);
+            background: #f0f9ff;
+        }
+        .counter {
+            margin: 14px 2px;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .results { display: grid; gap: 12px; }
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(31, 41, 55, 0.04);
+        }
+        .badge {
+            display: inline-block;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            background: #ecfeff;
+            color: #0e7490;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .question {
+            font-size: 16px;
+            line-height: 1.5;
+            font-weight: 650;
+            margin-bottom: 12px;
+        }
+        .answer {
+            color: var(--green);
+            background: var(--green-bg);
+            border-left: 4px solid #10b981;
+            border-radius: 0 7px 7px 0;
+            padding: 10px 14px;
+            line-height: 1.45;
+            font-size: 15px;
+        }
+        .empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 40px 0;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <h1>Казахский язык</h1>
+        <div class="subtitle">База данных: 115 вопросов</div>
+
+        <div class="search-block">
+            <input class="search" id="search" type="text" placeholder="Введите вопрос или ответ для поиска..." autofocus>
+            
+            <div class="kaz-panel" id="kaz-panel">
+                <button type="button" class="symbol-btn" onclick="insertSymbol('ә')">ә</button>
+                <button type="button" class="symbol-btn" onclick="insertSymbol('і')">і</button>
+                <button type="button" class="symbol-btn" onclick="insertSymbol('ң')">ң</button>
+                <button type="button" class="symbol-btn" onclick="insertSymbol('ғ')">ғ</button>
+                <button type="button" class="symbol-btn" onclick="insertSymbol('ү')">ү</button>
+                <button type="button" class="symbol-btn" onclick="insertSymbol('ұ')">ұ</button>
+                <button type="button" class="symbol-btn" onclick="insertSymbol('қ')">қ</button>
+                <button type="button" class="symbol-btn" onclick="insertSymbol('ө')">ө</button>
+            </div>
+        </div>
+
+        <div class="counter" id="counter">Найдено: 0</div>
+        <section class="results" id="results"></section>
+    </main>
+
+    <script>
+        const quizDatabase = [
+        {
+                "question": "Бір немесе бірнеше заттың бір ғана затқа немесе адамға меншікті екенін білдіру не деп аталады?",
+                "correct": "Оңаша тәуелдеу"
+        },
+        {
+                "question": "Бір немесе бірнеше заттың көп затқа немесе адамға меншікті екенін білдіру не деп аталады?",
+                "correct": "Ортақ тәуелдеу"
+        },
+        {
+                "question": "Балғабек Қыдырбекұлы алғашқы фельетондар жинағы қандай атпен 1962 жылы жарық көрді?",
+                "correct": "«Ешкімге айтпа»"
+        },
+        {
+                "question": "Қарағанды қаласы қай жылы құрылған?",
+                "correct": "1934 жылы"
+        },
+        {
+                "question": "1932 жылы кімді  Алматыдағы Қазақ драма  театрына шақырды?",
+                "correct": "Шәкен Аймановты"
+        },
+        {
+                "question": "1970 жылы Шәкен Аймановтың соңғы түсірген фильмі",
+                "correct": "«Атаманның ақыры»"
+        },
+        {
+                "question": "Қазақ киносының атасы кім болған?",
+                "correct": "Шәкен Айманов"
+        },
+        {
+                "question": "Қай қалада Абай атындағы Қазақ мемелекеттік академиялық опера және балет театры 1933 жылы ашылды?",
+                "correct": "Алматы қаласында"
+        },
+        {
+                "question": "Заттың санын, мөлшерін, ретін, шамасын білдіретін сөз табын көрсетіңіз.",
+                "correct": "Сан есім"
+        },
+        {
+                "question": "Қандай есептік сан есімге -ыншы, -інші жұрнағы жалғану арқылы жасалады?",
+                "correct": "Реттік сан есімге"
+        },
+        {
+                "question": "Қандай сан есімге -дан, -ден, -тан, -тен қосымшалары жалғану арқылы жасалады?",
+                "correct": "Топтық сан есімге"
+        },
+        {
+                "question": "Бөлшектік сан есім дегеніміз не?",
+                "correct": "Заттың бөлшектік санын білдіреді"
+        },
+        {
+                "question": "Қандай сан есім өзге сан есімдердің жасалуына негіз болады?",
+                "correct": "Есептік сан есім"
+        },
+        {
+                "question": "Белгілі бір қызметке тұру үшін жеке тұлғаның өмірбаяны, білімі, мамандығы, кәсіби шеберлігі, біліктілігі жайлы қысқа да нұсқа мағлұмат беретін ісқағаздың түрі не деп аталады?",
+                "correct": "Түйіндеме"
+        },
+        {
+                "question": "Есім сөздерді (зат есім, сын есім, сан есім) ауыстырып, солардың орнына жүретін сөздер не деп аталады?",
+                "correct": "Есімдіктер"
+        },
+        {
+                "question": "Есімдіктер мағынасы мен қызметіне қарай неше топқа бөлінеді?",
+                "correct": "7"
+        },
+        {
+                "question": "Сілтеу есімдіктері сөйлемде ненің қызметін атқарады?",
+                "correct": "Бастауыш, толықтауыш"
+        },
+        {
+                "question": "Өз деген бір ғана сөз жататын есімдіктің түрін көрсетіңіз.",
+                "correct": "Өздік есімдігі"
+        },
+        {
+                "question": "Бәрі, барлық, түгел, барша, бүкіл, т.б.  қай есімдіктерге жатады?",
+                "correct": "Жалпылау есімігіне"
+        },
+        {
+                "question": "Кім? не? қашан? қайда? т.б. қай есімдіктерге жатады?",
+                "correct": "Сұрау есімдіктеріне"
+        },
+        {
+                "question": "Ешкім, ештеңе,  дәнеңе, ешқашан, т.б.  қай есімдіктерге жатады?",
+                "correct": "Болымсыздық есімдіктеріне"
+        },
+        {
+                "question": "Біреу, кейбіреу, кімде-кім, бірнеше, әлденеше, біраз, т.б. қай есімдіктерге жатады?",
+                "correct": "Белгісіздік есімдіктеріне"
+        },
+        {
+                "question": "Бұл, сол, ол, анау, мынау, әне, міне, т.б. қай есімдіктерге жатады?",
+                "correct": "Сілтеу есімдіктеріне"
+        },
+        {
+                "question": "«Қан мен тер» triлогиясының авторы?",
+                "correct": "Әбдіжәміл Нұрпейісов"
+        },
+        {
+                "question": "Семей қаласында Жүсіпбек Аймауытов алашордашылармен бірге қандай журнал шығарды?",
+                "correct": "«Абай»"
+        },
+        {
+                "question": "Жүсіпбек Аймауытов Семейде кімдермен танысты?",
+                "correct": "Қ.Сәтбаев, М. Әуезов"
+        },
+        {
+                "question": "1915 жылы Жүсіпбек Аймауытов Семейде «Біржан мен Сара» спектаклін сахналап, өзі кімнің рөлін ойнаған?",
+                "correct": "Біржанның"
+        },
+        {
+                "question": "«Әнші» әңгімесіның авторы?",
+                "correct": "Ж. Аймауытов"
+        },
+        {
+                "question": "«Литературный сотрудник» сөзінің аудармасы?",
+                "correct": "Әдеби қызметкер"
+        },
+        {
+                "question": "«Вдохновляет» сөзінің  аудармасы?",
+                "correct": "Жігерлендіреді"
+        },
+        {
+                "question": "Іс-әрекеттің түрлі сындық, бейнелік, мекендік, мезгілдік, шарттық, мөлшерлік күй-жайын білдіретін сөз табы?",
+                "correct": "Үстеу"
+        },
+        {
+                "question": "Үстеу сөздер құрамы жағынан неше топқа бөлінеді?",
+                "correct": "2"
+        },
+        {
+                "question": "Туынды үстеу арқылы жасалған сөздерді көрсетіңіз.",
+                "correct": "Адамша, құсша"
+        },
+        {
+                "question": "Туынды үстеу арқылы жасалған сөздерді көрсетіңіз.",
+                "correct": "Күздей, қыстай"
+        },
+        {
+                "question": "Туынды үстеу тудыратын жұрнақтар қатарын көрсетіңіз.",
+                "correct": "-ша, -се; -лай, -лей, -тай, -тей, -дай, -дей; -шылап, -шілеп"
+        },
+        {
+                "question": "Қазақ балалар әдебиетінің атасы кім?",
+                "correct": "Ы.Алтынсарин"
+        },
+        {
+                "question": "«Дүние қалай етсең, табылады?» әңгімесінің авторы",
+                "correct": "Ы.Алтынсарин"
+        },
+        {
+                "question": "Қазақ тілінде сөздердің байланысы неше түрге бөлінеді?",
+                "correct": "5"
+        },
+        {
+                "question": "«Жер мен аспан арасындағы дастан» әңгімесінің авторы",
+                "correct": "Қайнар Олжай"
+        },
+        {
+                "question": "«Соңғы дем» әңгімесінің авторы кім?",
+                "correct": "Думан Рамазан"
+        },
+        {
+                "question": "«Қара пима» поэмасының авторы кім?",
+                "correct": "Ұлықбек Есдаулет"
+        },
+        {
+                "question": "Ілияс Жансүгіров неше жыл өмір сүрді?",
+                "correct": "44"
+        },
+        {
+                "question": "Талдықорғанда қай ақынның өмірі мен шығармашылығына арналған әдеби мемориалды мұражай жұмыс істейді?",
+                "correct": "І.Жансүгіровтың"
+        },
+        {
+                "question": "Заттың санын, мөлшерін, ретін білдіретін сөз табы не деп аталады?",
+                "correct": "Сан есім"
+        },
+        {
+                "question": "«Атымтай Жомарт» әңгімесінің авторы кім?",
+                "correct": "Ы.Алтынсарин"
+        },
+        {
+                "question": "«Выразительное слово» сөзінің аудармасы",
+                "correct": "Көркемсөз"
+        },
+        {
+                "question": "Зат есімнің қатарын көрсет.",
+                "correct": "Кітап, гүл, ағаш, дәптер"
+        },
+        {
+                "question": "Ограбление сөзінің аудармасын көрсет",
+                "correct": "Талан-тараж"
+        },
+        {
+                "question": "Убранный сөзінің аудармасын көрсет",
+                "correct": "Тап-тұйнақтай"
+        },
+        {
+                "question": "Себеп – салдар үстеуі қандай сұрақтарға жауап береді?",
+                "correct": "Не себепті? Неге? Қалай?"
+        },
+        {
+                "question": "Сан есімнің қатарын көрсет",
+                "correct": "Жетпіс, екі, алты, отыз"
+        },
+        {
+                "question": "Ақ сөзінің антонимін тап",
+                "correct": "Қара"
+        },
+        {
+                "question": "Атау септігінің сұрақтарын көрсет",
+                "correct": "Кім? Не?"
+        },
+        {
+                "question": "Уважение сөзінің аудармасын көрсет",
+                "correct": "Сыйластық"
+        },
+        {
+                "question": "Товарищ сөзінің аудармасын көрсет",
+                "correct": "Жолдас"
+        },
+        {
+                "question": "Сын есімнің сұрақтарын көрсет.",
+                "correct": "Қандай? Қай?"
+        },
+        {
+                "question": "«Невада-Семей» қозғалысын  басқарған – белгілі қоғам қайраткері, ақынды табыңыз",
+                "correct": "О. Сүлейменов"
+        },
+        {
+                "question": "Мағына жағынан бір-біріне қарсы, аралары алшақ жатқан екі нәрсені бетпе-бет қою",
+                "correct": "Антитеза"
+        },
+        {
+                "question": "Шыныдан су ішті - осы жолдардағы метонимияны көрсетіңіз",
+                "correct": "Шыны"
+        },
+        {
+                "question": "Үлкен арман болу керек адамға! - деген жолдардағы үлкен сөзінің қайталануы қалай аталады.",
+                "correct": "Анафора"
+        },
+        {
+                "question": "Көлеміне қарай мәтіндер бөлінеді:",
+                "correct": "макромәтін, микромәтін, күрделі синтаксистік тұтастық"
+        },
+        {
+                "question": "Ж.Аймауытұлы қандай кітап шығарды",
+                "correct": "Психология"
+        },
+        {
+                "question": "Қандайда бір мәселені көпшілік алдында шешу қалай аталады",
+                "correct": "Пікірталас"
+        },
+        {
+                "question": "Ойкөкпар, яғни дебат француз тілінен аударғанда қандай мағына береді",
+                "correct": "Талас"
+        },
+        {
+                "question": "Оқиғаны қара сөзбен баяндайтын шағын көркем шығарма жанры",
+                "correct": "Әңгіме"
+        },
+        {
+                "question": "И.А.Крыловтың Қырық мысал жинағын аударған кім?",
+                "correct": "Ахмет Байтұрсынов"
+        },
+        {
+                "question": "Ахмет Байтұрсынұлы қай жерде дүниеге келді?",
+                "correct": "Торғай"
+        },
+        {
+                "question": "A.Байтұрсыновтың  аударған шығармасын тап",
+                "correct": "Қырық мысал"
+        },
+        {
+                "question": "Қазақ тілі мемлекеттік мәртебені қай жылы алды?",
+                "correct": "1989 ж."
+        },
+        {
+                "question": "Қазақ  тілінде  жалғаудың  неше түрі  бар?",
+                "correct": "4"
+        },
+        {
+                "question": "Қазақ тілі қандай тілдер тобына жатады?",
+                "correct": "түркі"
+        },
+        {
+                "question": "Көптік жалғауы қай сөзге жалғанбайды?",
+                "correct": "қант"
+        },
+        {
+                "question": "Қазақ тілінде неше септік бар?",
+                "correct": "7"
+        },
+        {
+                "question": "Алғашқы қазақ әліппесін кім жазды?",
+                "correct": "А.Байтұрсынов"
+        },
+        {
+                "question": "Тура мағыналы сөзді табыңыз.",
+                "correct": "Жақсы адам"
+        },
+        {
+                "question": "Синоним сөздерді табыңыз.",
+                "correct": "Әдемі, сұлу."
+        },
+        {
+                "question": "Буынға бөлінбейтін сөзді белгілеңіз.",
+                "correct": "Серт."
+        },
+        {
+                "question": "Сұрау есімдіктерін көрсетіңіз.",
+                "correct": "Кім, не."
+        },
+        {
+                "question": "Сөйлем мүшелерінің санын анықтаңыз",
+                "correct": "5."
+        },
+        {
+                "question": "Қазақстан Республикасының Мемлекеттік Туының авторын анықтаңыз.",
+                "correct": "Шәкен Ниязбеков."
+        },
+        {
+                "question": "Берілген сөйлемді дұрыс аяқтаңыз. 25 қазан - …",
+                "correct": "Республика күні."
+        },
+        {
+                "question": "Зергерлік бұйымдарды белгілеңіз.",
+                "correct": "Шолпы, білезік, сырға, қапсырма."
+        },
+        {
+                "question": "Әбунасыр Әл — Фарабидің туған қаласын көрсетіңіз.",
+                "correct": "Отырар."
+        },
+        {
+                "question": "Сөздің басында кездеспейтін дауыссыз дыбыстарды көрсетіңіз.",
+                "correct": "Ң, Й."
+        },
+        {
+                "question": "Ұяң дауыссыздан басталған қосымшаны табыңыз.",
+                "correct": "Қызға."
+        },
+        {
+                "question": "Дара сын есімді көрсетіңіз.",
+                "correct": "Ақ."
+        },
+        {
+                "question": "Реттік сан есімді табыңыз.",
+                "correct": "Он бірінші."
+        },
+        {
+                "question": "Туынды түбірді анықтаңыз.",
+                "correct": "Тазалық."
+        },
+        {
+                "question": "Туынды зат есімді анықтаңыз.",
+                "correct": "Оқытушы."
+        },
+        {
+                "question": "Оқшау сөздер түрлерін анықтаңыз.",
+                "correct": "Қыстырма сөз, қаратпа сөз, одағай"
+        },
+        {
+                "question": "Арал теңізінің солтүстік — батыс бөлігінде орналасқан қорықты көрсетіңіз.",
+                "correct": "Барсакелмес."
+        },
+        {
+                "question": "Антоним сөздерді табыңыз:",
+                "correct": "Биік, аласа."
+        },
+        {
+                "question": "Жіктеу есімдіктерін табыңыз.",
+                "correct": "сен, біз, ол, олар, senдер"
+        },
+        {
+                "question": "Жалқы есімді көрсетіңіз.",
+                "correct": "Кәрім"
+        },
+        {
+                "question": "Қай сөйлемде «ма» бөлек жазылады?",
+                "correct": "Халықаралық сауда мен өндірістің арасында байланыс бар (ма)"
+        },
+        {
+                "question": "Антонимдік қатарды табыңыз.",
+                "correct": "кіріс, шығыс"
+        },
+        {
+                "question": "Барыс септігіндеги зат есімді табыңыз.",
+                "correct": "қоғамға"
+        },
+        {
+                "question": "Тұйық етістіктегі сөздерді көрсетіңіз.",
+                "correct": "салу, қайтару"
+        },
+        {
+                "question": "Сын есім мен етістіктің тіркесін көрсетіңіз.",
+                "correct": "тез дамиды"
+        },
+        {
+                "question": "Жатыс септігінде тұрған сөзді табыңыз.",
+                "correct": "уақытында"
+        },
+        {
+                "question": "Тәуелдік жалғауының ІІІ жағындағы сөзді табыңыз.",
+                "correct": "бағасы"
+        },
+        {
+                "question": "Реттік сан есімнің сұрағын көрсетіңіз.",
+                "correct": "нешінші"
+        },
+        {
+                "question": "Қатыстық сын есім қайсы?",
+                "correct": "құнды қағаз"
+        },
+        {
+                "question": "Синоним қатарын табыңыз",
+                "correct": "Алғашқы, тұңғыш"
+        },
+        {
+                "question": "Антонимді көрсетіңіз",
+                "correct": "кеше – ертең"
+        },
+        {
+                "question": "Көп нүктенің орнына қажетті жалғауды қойыңыз. Қазір ол шетел ... оқып жүр.",
+                "correct": "-де"
+        },
+        {
+                "question": "Реттік сан есімді табыңыз.",
+                "correct": "Бірінші қатарда отырмын"
+        },
+        {
+                "question": "Шығыс септігінде тұрған зат есімді табыңыз.",
+                "correct": "лизингтен"
+        },
+        {
+                "question": "Септеулік шылауды табыңыз.",
+                "correct": "туралы, соң, үшін"
+        },
+        {
+                "question": "Мезгіл үстеуін табыңыз.",
+                "correct": "қыста, бүгін"
+        },
+        {
+                "question": "Көп нүктенің орнына қай сөзді қою керек? Сен колледжде … .",
+                "correct": "оқисың"
+        },
+        {
+                "question": "Қарағанды Банк колледжі қай жылы құрылды?",
+                "correct": "1976"
+        },
+        {
+                "question": "«Бытовые отходы» орыс тілінде",
+                "correct": "Тұрмыстық қалдықтар"
+        },
+        {
+                "question": "«Абай жолы» роман-эпопеясының авторы",
+                "correct": "М.Әуезов"
+        },
+        {
+                "question": "«Астана Опера» мемлекеттік опера және балет театры қай жылы ашылды?",
+                "correct": "2013"
+        }
+        ];
+
+        const searchInput = document.getElementById("search");
+        const resultsSection = document.getElementById("results");
+        const counterDiv = document.getElementById("counter");
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, char => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "\"": "&quot;",
+                "'": "&#039;"
+            }[char]));
+        }
+
+        function normalizeKazakhText(str) {
+            return str.toLowerCase()
+                .replace(/ә/g, 'а')
+                .replace(/і/g, 'ы')
+                .replace(/ң/g, 'н')
+                .replace(/ғ/g, 'г')
+                .replace(/ү/g, 'у')
+                .replace(/ұ/g, 'у')
+                .replace(/қ/g, 'к')
+                .replace(/ө/g, 'о');
+        }
+
+        function render() {
+            const rawTerm = searchInput.value.trim();
+            const term = rawTerm.toLowerCase();
+            const normalizedTerm = normalizeKazakhText(rawTerm);
+
+            const filtered = quizDatabase.filter(item => {
+                if (!term) return true;
+
+                const plainText = `${item.question} ${item.correct}`.toLowerCase();
+                if (plainText.includes(term)) return true;
+
+                const normalizedItemText = normalizeKazakhText(`${item.question} ${item.correct}`);
+                return normalizedItemText.includes(normalizedTerm);
+            });
+
+            counterDiv.textContent = `Найдено: ${filtered.length}`;
+            
+            if (!filtered.length) {
+                resultsSection.innerHTML = '<div class="empty">Ничего не найдено</div>';
+                return;
+            }
+
+            resultsSection.innerHTML = filtered.map(item => `
+                <article class="card">
+                    <span class="badge">Казахский язык</span>
+                    <div class="question">${escapeHtml(item.question)}</div>
+                    <div class="answer"><strong>Ответ:</strong> ${escapeHtml(item.correct)}</div>
+                </article>
+            `).join("");
+        }
+
+        searchInput.addEventListener("input", render);
+        render();
+
+        window.insertSymbol = function(symbol) {
+            const start = searchInput.selectionStart;
+            const end = searchInput.selectionEnd;
+            const text = searchInput.value;
+            
+            searchInput.value = text.substring(0, start) + symbol + text.substring(end);
+            
+            searchInput.focus();
+            searchInput.selectionStart = searchInput.selectionEnd = start + symbol.length;
+            
+            render();
+        };
+    </script>
+</body>
+</html>
